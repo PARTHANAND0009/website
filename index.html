@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Prime Studios | Premium Thumbnails</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <script>
       tailwind.config = {
         theme: {
@@ -24,43 +32,28 @@
                 card: '#121212'
               }
             },
-            backgroundImage: {
-              'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+            animation: {
+                'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'float': 'float 6s ease-in-out infinite',
+            },
+            keyframes: {
+                float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-20px)' },
+                }
             }
           }
         }
       }
     </script>
+    
     <style>
       body {
         background-color: #030303;
         color: #ffffff;
-      }
-      .perspective-container {
-        perspective: 1px;
-        transform-style: preserve-3d;
-        height: 100vh;
         overflow-x: hidden;
-        overflow-y: scroll;
       }
-      .perspective-text {
-        text-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      }
-      .transform-style-3d {
-        transform-style: preserve-3d;
-      }
-      .perspective-1000 {
-        perspective: 1000px;
-      }
-      .perspective-2000 {
-        perspective: 2000px;
-      }
-      .translate-z-10 {
-        transform: translateZ(10px);
-      }
-      .translate-z-20 {
-        transform: translateZ(20px);
-      }
+
       /* Custom Scrollbar */
       ::-webkit-scrollbar {
         width: 6px;
@@ -75,20 +68,610 @@
       ::-webkit-scrollbar-thumb:hover {
         background: #555;
       }
+
+      /* Utilities */
+      .perspective-1000 {
+        perspective: 1000px;
+      }
+      .perspective-2000 {
+        perspective: 2000px;
+      }
+      .transform-style-3d {
+        transform-style: preserve-3d;
+      }
+      .backface-hidden {
+        backface-visibility: hidden;
+      }
+      
+      /* Animation Classes */
+      .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      
+      .tilt-card {
+        transform-style: preserve-3d;
+        transform: perspective(1000px);
+      }
+      .tilt-inner {
+        transform-style: preserve-3d;
+        transition: transform 0.1s ease-out;
+      }
+      .translate-z-10 { transform: translateZ(10px); }
+      .translate-z-20 { transform: translateZ(20px); }
+      .translate-z-30 { transform: translateZ(30px); }
+
+      /* Hero Text Shadow */
+      .perspective-text {
+        text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+
+      /* Gradient Text */
+      .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        background-image: linear-gradient(to bottom, #ffffff, #e5e7eb, #4b5563);
+      }
+      
+      .text-gradient-gold {
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        background-image: linear-gradient(to right, #FFD700, #ffffff);
+      }
     </style>
-  <script type="importmap">
+<script type="importmap">
 {
   "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
     "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "framer-motion": "https://esm.sh/framer-motion@^12.23.26"
+    "framer-motion": "https://esm.sh/framer-motion@^12.24.7"
   }
 }
 </script>
 </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<body class="antialiased">
+
+    <!-- Parallax Background -->
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden" id="parallax-bg">
+        <div class="absolute inset-0 bg-[#030303]"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black via-[#0a0a0a] to-[#050505] opacity-90"></div>
+        
+        <!-- Grid Floor -->
+        <div id="grid-floor" class="absolute inset-[-100%] bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:100px_100px] origin-bottom opacity-20" style="transform: perspective(500px) rotateX(60deg);"></div>
+
+        <!-- Orbs -->
+        <div id="orb-blue" class="absolute top-0 left-0 w-[800px] h-[800px] bg-prime-blue/5 rounded-full blur-[120px] mix-blend-screen transition-transform duration-[2000ms] ease-out"></div>
+        <div id="orb-gold" class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-prime-gold/5 rounded-full blur-[100px] mix-blend-screen transition-transform duration-[2000ms] ease-out"></div>
+        
+        <!-- Noise -->
+        <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-6">
+        <div class="container mx-auto px-6 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-2 group">
+                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300 shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                    <i data-lucide="zap" class="w-6 h-6 text-black fill-current"></i>
+                </div>
+                <span class="font-display font-bold text-xl tracking-tight text-white group-hover:text-prime-gold transition-colors">
+                    PRIME STUDIOS
+                </span>
+            </a>
+
+            <!-- Desktop Nav -->
+            <div class="hidden md:flex items-center gap-10">
+                <a href="#process" class="text-sm font-medium text-white/70 hover:text-white transition-colors uppercase tracking-wider hover:scale-105 transform duration-200">Process</a>
+                <a href="#pricing" class="text-sm font-medium text-white/70 hover:text-white transition-colors uppercase tracking-wider hover:scale-105 transform duration-200">Pricing</a>
+                <a href="https://discord.gg/example" target="_blank" class="px-6 py-2 bg-white/10 hover:bg-white text-white hover:text-black rounded-full text-sm font-bold transition-all duration-300 backdrop-blur-sm border border-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)]">
+                    DISCORD
+                </a>
+            </div>
+
+            <!-- Mobile Toggle -->
+            <button id="mobile-menu-btn" class="md:hidden text-white">
+                <i data-lucide="menu" id="menu-icon"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden absolute top-full left-0 right-0 bg-black/95 backdrop-blur-xl border-b border-white/10 p-6 flex-col gap-4 shadow-2xl">
+            <a href="#process" class="mobile-link text-lg font-medium text-white/80 hover:text-prime-gold">Process</a>
+            <a href="#pricing" class="mobile-link text-lg font-medium text-white/80 hover:text-prime-gold">Pricing</a>
+            <a href="https://discord.gg/example" class="text-lg font-bold text-prime-blue">JOIN DISCORD</a>
+        </div>
+    </nav>
+
+    <main class="relative z-10 perspective-container">
+        
+        <!-- Hero Section -->
+        <section class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden perspective-2000">
+            <div class="container mx-auto px-6 relative z-10 text-center transform-style-3d">
+                
+                <!-- Floating 3D Elements -->
+                <div class="absolute inset-0 pointer-events-none transform-style-3d hidden lg:block">
+                    <div id="hero-card-1" class="absolute top-[20%] left-[10%] w-48 h-32 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg shadow-[0_0_30px_rgba(37,99,235,0.2)]" style="transform: rotateX(10deg) rotateY(-10deg) rotateZ(5deg);">
+                        <div class="absolute inset-0 bg-gradient-to-br from-prime-blue/20 to-transparent"></div>
+                    </div>
+                    
+                    <div id="hero-card-2" class="absolute top-[30%] right-[10%] w-64 h-40 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg shadow-[0_0_30px_rgba(255,215,0,0.2)]" style="transform: rotateX(-10deg) rotateY(20deg) rotateZ(-5deg);">
+                        <div class="absolute inset-0 bg-gradient-to-bl from-prime-gold/20 to-transparent"></div>
+                    </div>
+                </div>
+
+                <div id="hero-content" class="relative z-20 transition-transform duration-75 ease-out">
+                    <div class="inline-flex items-center gap-2 mb-8 px-6 py-2 rounded-full border border-white/10 bg-black/50 backdrop-blur-xl shadow-[0_0_20px_rgba(255,215,0,0.2)] reveal active">
+                        <span class="w-2 h-2 rounded-full bg-prime-gold animate-pulse shadow-[0_0_10px_#FFD700]"></span>
+                        <span class="text-xs font-bold tracking-[0.25em] text-prime-gold uppercase">Elite Design Agency</span>
+                    </div>
+
+                    <h1 class="font-display font-extrabold text-6xl md:text-8xl lg:text-[10rem] tracking-tighter leading-[0.85] text-white mb-8 perspective-text reveal active" style="transition-delay: 100ms;">
+                        <span class="block hover:scale-105 transition-transform duration-500 origin-bottom">VISUAL</span>
+                        <span class="block text-gradient hover:scale-105 transition-transform duration-500 delay-75 origin-top">DOMINANCE</span>
+                    </h1>
+
+                    <p class="text-lg md:text-2xl text-gray-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed reveal active" style="transition-delay: 200ms;">
+                        We engineer <span class="text-white font-medium">high-CTR assets</span> for the world's most ambitious creators. <br>Stop blending in.
+                    </p>
+
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-6 reveal active" style="transition-delay: 300ms;">
+                        <a href="https://discord.gg/example" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold transition-all duration-300 transform hover:-translate-y-1 bg-white text-black hover:bg-prime-gold shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] uppercase text-sm tracking-wide">
+                            Start Project <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </a>
+                        <a href="#process" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold transition-all duration-300 transform hover:-translate-y-1 bg-transparent text-white border border-white/20 hover:border-white hover:bg-white/5 uppercase text-sm tracking-wide">
+                            Our Process
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="mt-32 border-t border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent backdrop-blur-sm transform-style-3d reveal" style="transition-delay: 500ms;">
+                    <div class="max-w-6xl mx-auto py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+                        <div class="text-center group">
+                            <div class="font-display font-bold text-4xl text-white mb-1 group-hover:text-prime-gold transition-colors duration-300">+45%</div>
+                            <div class="text-xs uppercase tracking-[0.2em] text-gray-500 group-hover:text-white transition-colors">CTR Uplift</div>
+                        </div>
+                        <div class="text-center group">
+                            <div class="font-display font-bold text-4xl text-white mb-1 group-hover:text-prime-gold transition-colors duration-300">5k+</div>
+                            <div class="text-xs uppercase tracking-[0.2em] text-gray-500 group-hover:text-white transition-colors">Thumbnails</div>
+                        </div>
+                        <div class="text-center group">
+                            <div class="font-display font-bold text-4xl text-white mb-1 group-hover:text-prime-gold transition-colors duration-300">200+</div>
+                            <div class="text-xs uppercase tracking-[0.2em] text-gray-500 group-hover:text-white transition-colors">Creators</div>
+                        </div>
+                        <div class="text-center group">
+                            <div class="font-display font-bold text-4xl text-white mb-1 group-hover:text-prime-gold transition-colors duration-300">24h</div>
+                            <div class="text-xs uppercase tracking-[0.2em] text-gray-500 group-hover:text-white transition-colors">Speed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="py-24 relative bg-prime-card perspective-1000">
+            <div class="container mx-auto px-6 relative z-10">
+                <div class="mb-16 md:mb-24 text-center md:text-left reveal">
+                    <h2 class="font-display font-bold text-4xl md:text-5xl text-white mb-6">
+                        Why Top Creators <br />
+                        <span class="text-gray-500">Choose Prime.</span>
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="tilt-card h-full reveal" style="transition-delay: 0ms;">
+                        <div class="tilt-inner group p-8 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/5 h-full flex flex-col shadow-xl">
+                            <div class="mb-6 p-4 rounded-xl bg-black/50 w-fit group-hover:scale-110 transition-transform duration-300 border border-white/5 shadow-inner translate-z-10">
+                                <i data-lucide="mouse-pointer-click" class="w-8 h-8 text-prime-gold"></i>
+                            </div>
+                            <h3 class="font-display font-bold text-xl text-white mb-3 translate-z-20">Designed for CTR</h3>
+                            <p class="text-gray-400 leading-relaxed text-sm translate-z-10">We don't just make art; we make clicks. Every element is psychometrically positioned to stop the scroll.</p>
+                            <div class="mt-auto pt-6">
+                                <div class="h-1 w-0 group-hover:w-full bg-gradient-to-r from-prime-gold to-prime-blue transition-all duration-500 rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="tilt-card h-full reveal" style="transition-delay: 100ms;">
+                        <div class="tilt-inner group p-8 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/5 h-full flex flex-col shadow-xl">
+                            <div class="mb-6 p-4 rounded-xl bg-black/50 w-fit group-hover:scale-110 transition-transform duration-300 border border-white/5 shadow-inner translate-z-10">
+                                <i data-lucide="zap" class="w-8 h-8 text-prime-blue"></i>
+                            </div>
+                            <h3 class="font-display font-bold text-xl text-white mb-3 translate-z-20">Lightning Fast</h3>
+                            <p class="text-gray-400 leading-relaxed text-sm translate-z-10">24-48 hour turnaround times. Because the algorithm waits for nobody.</p>
+                            <div class="mt-auto pt-6">
+                                <div class="h-1 w-0 group-hover:w-full bg-gradient-to-r from-prime-gold to-prime-blue transition-all duration-500 rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="tilt-card h-full reveal" style="transition-delay: 200ms;">
+                        <div class="tilt-inner group p-8 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/5 h-full flex flex-col shadow-xl">
+                            <div class="mb-6 p-4 rounded-xl bg-black/50 w-fit group-hover:scale-110 transition-transform duration-300 border border-white/5 shadow-inner translate-z-10">
+                                <i data-lucide="message-circle" class="w-8 h-8 text-white"></i>
+                            </div>
+                            <h3 class="font-display font-bold text-xl text-white mb-3 translate-z-20">Direct Comms</h3>
+                            <p class="text-gray-400 leading-relaxed text-sm translate-z-10">No email chains. Chat directly with your lead designer on Discord for instant feedback.</p>
+                            <div class="mt-auto pt-6">
+                                <div class="h-1 w-0 group-hover:w-full bg-gradient-to-r from-prime-gold to-prime-blue transition-all duration-500 rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div class="tilt-card h-full reveal" style="transition-delay: 300ms;">
+                        <div class="tilt-inner group p-8 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/5 h-full flex flex-col shadow-xl">
+                            <div class="mb-6 p-4 rounded-xl bg-black/50 w-fit group-hover:scale-110 transition-transform duration-300 border border-white/5 shadow-inner translate-z-10">
+                                <i data-lucide="layout-template" class="w-8 h-8 text-purple-500"></i>
+                            </div>
+                            <h3 class="font-display font-bold text-xl text-white mb-3 translate-z-20">100% Custom</h3>
+                            <p class="text-gray-400 leading-relaxed text-sm translate-z-10">No reused templates. Every thumbnail is built from scratch to match your video's unique hook.</p>
+                            <div class="mt-auto pt-6">
+                                <div class="h-1 w-0 group-hover:w-full bg-gradient-to-r from-prime-gold to-prime-blue transition-all duration-500 rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="py-24 relative overflow-hidden">
+            <div class="container mx-auto px-6 relative z-10">
+                <div class="text-center mb-20 reveal">
+                    <h2 class="font-display font-bold text-5xl text-white mb-4">Investment</h2>
+                    <p class="text-gray-400 text-lg">Transparent pricing for premium assets.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
+                    
+                    <!-- Starter Plan -->
+                    <div class="tilt-card h-full reveal" style="transition-delay: 0ms;">
+                        <div class="tilt-inner relative p-8 rounded-3xl bg-black/40 backdrop-blur-xl border border-white/10 flex flex-col h-full group overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+                            <div class="mb-8 relative z-10">
+                                <h3 class="text-xl font-bold mb-2 text-white translate-z-10">Starter</h3>
+                                <div class="flex items-baseline gap-1 translate-z-10">
+                                    <span class="text-5xl font-display font-bold text-white">$15</span>
+                                    <span class="text-gray-500">/ unit</span>
+                                </div>
+                                <p class="text-gray-400 text-sm mt-4 translate-z-10">Entry level velocity.</p>
+                            </div>
+                            <div class="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-8"></div>
+                            <ul class="space-y-4 mb-8 flex-grow relative z-10">
+                                <li class="flex items-center gap-3 text-sm text-gray-300"><i data-lucide="check" class="w-4 h-4 text-white"></i> 1 Custom Thumbnail</li>
+                                <li class="flex items-center gap-3 text-sm text-gray-300"><i data-lucide="check" class="w-4 h-4 text-white"></i> 2 Revisions</li>
+                                <li class="flex items-center gap-3 text-sm text-gray-300"><i data-lucide="check" class="w-4 h-4 text-white"></i> 24h Delivery</li>
+                                <li class="flex items-center gap-3 text-sm text-gray-300"><i data-lucide="check" class="w-4 h-4 text-white"></i> JPEG + PNG</li>
+                            </ul>
+                            <a href="#" class="mt-auto w-full inline-flex items-center justify-center px-6 py-3 rounded-full border border-white/20 hover:bg-white hover:text-black transition-colors uppercase font-bold text-sm tracking-wide">Select Plan</a>
+                        </div>
+                    </div>
+
+                    <!-- Pro Plan -->
+                    <div class="tilt-card h-full z-10 scale-105 reveal" style="transition-delay: 150ms;">
+                        <div class="tilt-inner relative p-8 rounded-3xl bg-black/60 backdrop-blur-xl border border-prime-gold/30 flex flex-col h-full group overflow-hidden shadow-[0_0_50px_rgba(255,215,0,0.15)]">
+                            <div class="absolute inset-0 bg-gradient-to-b from-prime-gold/5 to-transparent pointer-events-none"></div>
+                            <div class="absolute -top-0 left-1/2 transform -translate-x-1/2 bg-prime-gold text-black text-xs font-bold px-4 py-1 rounded-b-lg uppercase tracking-wider shadow-[0_0_20px_#FFD700]">Most Popular</div>
+                            
+                            <div class="mb-8 relative z-10 mt-4">
+                                <h3 class="text-xl font-bold mb-2 text-prime-gold translate-z-10">Pro</h3>
+                                <div class="flex items-baseline gap-1 translate-z-10">
+                                    <span class="text-5xl font-display font-bold text-white">$30</span>
+                                    <span class="text-gray-500">/ unit</span>
+                                </div>
+                                <p class="text-gray-400 text-sm mt-4 translate-z-10">Maximum impact & scale.</p>
+                            </div>
+                            <div class="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-8"></div>
+                            <ul class="space-y-4 mb-8 flex-grow relative z-10">
+                                <li class="flex items-center gap-3 text-sm text-gray-300"><div class="w-5 h-5 rounded-full bg-prime-gold text-black flex items-center justify-center"><i data-lucide="check" class="w-3 h-3"></i></div> 1 Premium Thumbnail</li>
+                                <li class="flex items-center gap-3 text-sm text-gray-300"><div class="w-5 h-5 rounded-full bg-prime-gold text-black flex items-center justify-center"><i data-lucide="check" class="w-3 h-3"></i></div> Unlimited Revisions</li>
+                                <li class="flex items-center gap-3 text-sm text-gray-300"><div class="w-5 h-5 rounded-full bg-prime-gold text-black flex items-center justify-center"><i data-lucide="check" class="w-3 h-3"></i></div> Source File Included</li>
+                                <li class="flex items-center gap-3 text-sm text-gray-300"><div class="w-5 h-5 rounded-full bg-prime-gold text-black flex items-center justify-center"><i data-lucide="check" class="w-3 h-3"></i></div> A/B Test Variant</li>
+                            </ul>
+                            <a href="#" class="mt-auto w-full inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-black hover:bg-prime-gold transition-colors uppercase font-bold text-sm tracking-wide shadow-lg hover:shadow-prime-gold/50">Start Now</a>
+                        </div>
+                    </div>
+
+                    <!-- Premium Plan -->
+                    <div class="tilt-card h-full reveal" style="transition-delay: 300ms;">
+                        <div class="tilt-inner relative p-8 rounded-3xl bg-black/40 backdrop-blur-xl border border-white/10 flex flex-col h-full group overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+                            <div class="mb-8 relative z-10">
+                                <h3 class="text-xl font-bold mb-2 text-white translate-z-10">Premium</h3>
+                                <div class="flex items-baseline gap-1 translate-z-10">
+                                    <span class="text-5xl font-display font-bold text-white">$50</span>
+                                    <span class="text-gray-500">/ unit</span>
+                                </div>
+                                <p class="text-gray-400 text-sm mt-4 translate-z-10">Agency-grade artistry.</p>
+                            </div>
+                            <div class="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-8"></div>
+                            <ul class="space-y-4 mb-8 flex-grow relative z-10">
+                                <li class="flex items-center gap-3 text-sm text-gray-300"><i data-lucide="check" class="w-4 h-4 text-white"></i> 1 High-End Manipulation</li>
+                                <li class="flex items-center gap-3 text-sm text-gray-300"><i data-lucide="check" class="w-4 h-4 text-white"></i> Unlimited Revisions</li>
+                                <li class="flex items-center gap-3 text-sm text-gray-300"><i data-lucide="check" class="w-4 h-4 text-white"></i> Source File (PSD)</li>
+                                <li class="flex items-center gap-3 text-sm text-gray-300"><i data-lucide="check" class="w-4 h-4 text-white"></i> Art Director Review</li>
+                            </ul>
+                            <a href="#" class="mt-auto w-full inline-flex items-center justify-center px-6 py-3 rounded-full border border-white/20 hover:bg-white hover:text-black transition-colors uppercase font-bold text-sm tracking-wide">Select Plan</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section -->
+        <section id="process" class="py-24 relative">
+            <div class="container mx-auto px-6 relative z-10 max-w-5xl">
+                <div class="text-center mb-24 reveal">
+                    <div class="inline-block px-4 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-4">
+                        <span class="text-prime-blue text-xs font-bold uppercase tracking-widest">Workflow</span>
+                    </div>
+                    <h2 class="font-display font-bold text-5xl md:text-6xl text-white mb-6">The Pipeline</h2>
+                </div>
+
+                <div class="relative">
+                    <!-- Beam Line -->
+                    <div class="absolute left-[20px] md:left-1/2 top-0 bottom-0 w-px bg-white/10 md:-translate-x-1/2 overflow-hidden">
+                        <div id="process-beam" class="absolute top-0 left-0 w-full bg-gradient-to-b from-prime-blue via-prime-gold to-prime-blue shadow-[0_0_20px_#2563EB] h-0 transition-all duration-100 ease-out"></div>
+                    </div>
+
+                    <!-- Steps -->
+                    <div class="space-y-24">
+                        <!-- Step 1 -->
+                        <div class="relative flex flex-col md:flex-row gap-8 md:gap-0 items-center reveal">
+                            <div class="absolute left-[20px] md:left-1/2 w-4 h-4 md:-translate-x-1/2 rounded-full bg-black border-2 border-white/20 z-10 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                                <div class="absolute inset-0 bg-white rounded-full animate-ping opacity-20"></div>
+                            </div>
+                            <div class="w-full md:w-1/2 pl-16 md:pl-0 md:pr-16 md:text-right">
+                                <div class="group relative bg-white/5 border border-white/5 hover:border-prime-blue/30 p-8 rounded-2xl backdrop-blur-md transition-all duration-500 hover:shadow-[0_0_40px_rgba(37,99,235,0.1)] hover:-translate-y-2">
+                                    <div class="text-6xl font-display font-bold text-white/5 absolute -top-8 right-8 group-hover:text-white/10 transition-colors">01</div>
+                                    <h3 class="text-2xl font-bold text-white mb-4 relative z-10">Initiate</h3>
+                                    <p class="text-gray-400 leading-relaxed relative z-10">Join the Discord. Open a ticket. Direct line to the design team.</p>
+                                </div>
+                            </div>
+                            <div class="hidden md:block w-1/2"></div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="relative flex flex-col md:flex-row gap-8 md:gap-0 items-center reveal">
+                            <div class="absolute left-[20px] md:left-1/2 w-4 h-4 md:-translate-x-1/2 rounded-full bg-black border-2 border-white/20 z-10 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                                <div class="absolute inset-0 bg-white rounded-full animate-ping opacity-20"></div>
+                            </div>
+                            <div class="hidden md:block w-1/2"></div>
+                            <div class="w-full md:w-1/2 pl-16 md:pl-16 text-left">
+                                <div class="group relative bg-white/5 border border-white/5 hover:border-prime-blue/30 p-8 rounded-2xl backdrop-blur-md transition-all duration-500 hover:shadow-[0_0_40px_rgba(37,99,235,0.1)] hover:-translate-y-2">
+                                    <div class="text-6xl font-display font-bold text-white/5 absolute -top-8 left-8 group-hover:text-white/10 transition-colors">02</div>
+                                    <h3 class="text-2xl font-bold text-white mb-4 relative z-10">Upload</h3>
+                                    <p class="text-gray-400 leading-relaxed relative z-10">Drop your concept, title, and raw assets. We handle the composition.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                         <!-- Step 3 -->
+                         <div class="relative flex flex-col md:flex-row gap-8 md:gap-0 items-center reveal">
+                            <div class="absolute left-[20px] md:left-1/2 w-4 h-4 md:-translate-x-1/2 rounded-full bg-black border-2 border-white/20 z-10 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                                <div class="absolute inset-0 bg-white rounded-full animate-ping opacity-20"></div>
+                            </div>
+                            <div class="w-full md:w-1/2 pl-16 md:pl-0 md:pr-16 md:text-right">
+                                <div class="group relative bg-white/5 border border-white/5 hover:border-prime-blue/30 p-8 rounded-2xl backdrop-blur-md transition-all duration-500 hover:shadow-[0_0_40px_rgba(37,99,235,0.1)] hover:-translate-y-2">
+                                    <div class="text-6xl font-display font-bold text-white/5 absolute -top-8 right-8 group-hover:text-white/10 transition-colors">03</div>
+                                    <h3 class="text-2xl font-bold text-white mb-4 relative z-10">Construct</h3>
+                                    <p class="text-gray-400 leading-relaxed relative z-10">We build the thumbnail using advanced manipulation and lighting.</p>
+                                </div>
+                            </div>
+                            <div class="hidden md:block w-1/2"></div>
+                        </div>
+
+                         <!-- Step 4 -->
+                         <div class="relative flex flex-col md:flex-row gap-8 md:gap-0 items-center reveal">
+                            <div class="absolute left-[20px] md:left-1/2 w-4 h-4 md:-translate-x-1/2 rounded-full bg-black border-2 border-white/20 z-10 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                                <div class="absolute inset-0 bg-white rounded-full animate-ping opacity-20"></div>
+                            </div>
+                            <div class="hidden md:block w-1/2"></div>
+                            <div class="w-full md:w-1/2 pl-16 md:pl-16 text-left">
+                                <div class="group relative bg-white/5 border border-white/5 hover:border-prime-blue/30 p-8 rounded-2xl backdrop-blur-md transition-all duration-500 hover:shadow-[0_0_40px_rgba(37,99,235,0.1)] hover:-translate-y-2">
+                                    <div class="text-6xl font-display font-bold text-white/5 absolute -top-8 left-8 group-hover:text-white/10 transition-colors">04</div>
+                                    <h3 class="text-2xl font-bold text-white mb-4 relative z-10">Deploy</h3>
+                                    <p class="text-gray-400 leading-relaxed relative z-10">Review the asset. Unlimited revisions until your vision is real.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-32 relative overflow-hidden flex items-center justify-center">
+             <div class="absolute inset-0 bg-black z-0"></div>
+             <!-- Grid overlay -->
+             <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)] z-0"></div>
+             
+             <div class="container mx-auto px-6 relative z-10 text-center reveal">
+                 <h2 class="font-display font-extrabold text-5xl md:text-7xl text-white mb-8 tracking-tight">
+                     Ready to Upgrade <br />
+                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-prime-gold to-white">Your Clicks?</span>
+                 </h2>
+                 <p class="text-gray-400 text-xl max-w-xl mx-auto mb-10">Join hundreds of creators who have leveled up their channel with Prime Studios.</p>
+                 <a href="https://discord.gg/example" class="inline-flex items-center justify-center gap-2 px-12 py-5 rounded-full font-bold transition-all duration-300 transform hover:-translate-y-1 bg-white text-black hover:bg-prime-gold shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] uppercase text-lg tracking-wide">
+                    Join The Discord <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </a>
+             </div>
+        </section>
+    </main>
+
+    <footer class="bg-black border-t border-white/10 pt-20 pb-10 relative z-20">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-16 gap-8 text-center md:text-left">
+                <div>
+                    <div class="flex items-center justify-center md:justify-start gap-2 mb-4">
+                        <i data-lucide="zap" class="w-6 h-6 text-prime-gold fill-current"></i>
+                        <span class="font-display font-bold text-2xl text-white">PRIME STUDIOS</span>
+                    </div>
+                    <p class="text-gray-500 text-sm max-w-xs">Designing the face of your content. <br /> Premium thumbnails for premium creators.</p>
+                </div>
+                <div class="flex gap-6">
+                    <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all duration-300"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all duration-300"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all duration-300"><i data-lucide="youtube" class="w-5 h-5"></i></a>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/5 text-gray-600 text-sm">
+                <p>&copy; 2024 Prime Studios. All rights reserved.</p>
+                <div class="flex gap-8 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-white transition-colors">Terms</a>
+                    <a href="#" class="hover:text-white transition-colors">Privacy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // --- Navbar Logic ---
+        const navbar = document.getElementById('navbar');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
+        let isMenuOpen = false;
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-black/80', 'backdrop-blur-md', 'border-b', 'border-white/5', 'py-4');
+                navbar.classList.remove('py-6');
+            } else {
+                navbar.classList.remove('bg-black/80', 'backdrop-blur-md', 'border-b', 'border-white/5', 'py-4');
+                navbar.classList.add('py-6');
+            }
+        });
+
+        mobileMenuBtn.addEventListener('click', () => {
+            isMenuOpen = !isMenuOpen;
+            if (isMenuOpen) {
+                mobileMenu.classList.remove('hidden');
+                mobileMenu.classList.add('flex');
+                menuIcon.setAttribute('data-lucide', 'x');
+            } else {
+                mobileMenu.classList.add('hidden');
+                mobileMenu.classList.remove('flex');
+                menuIcon.setAttribute('data-lucide', 'menu');
+            }
+            lucide.createIcons();
+        });
+
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => {
+                isMenuOpen = false;
+                mobileMenu.classList.add('hidden');
+                mobileMenu.classList.remove('flex');
+                menuIcon.setAttribute('data-lucide', 'menu');
+                lucide.createIcons();
+            });
+        });
+
+        // --- Tilt Card Effect ---
+        const tiltCards = document.querySelectorAll('.tilt-card');
+        
+        tiltCards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Calculate position relative to center in percentage (-0.5 to 0.5)
+                const xPct = (x / rect.width) - 0.5;
+                const yPct = (y / rect.height) - 0.5;
+                
+                // Rotate calculation
+                const rotateX = yPct * -20; // Up/Down tilt
+                const rotateY = xPct * 20;  // Left/Right tilt
+                
+                const inner = card.querySelector('.tilt-inner');
+                if (inner) {
+                    inner.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                }
+            });
+
+            card.addEventListener('mouseleave', () => {
+                const inner = card.querySelector('.tilt-inner');
+                if (inner) {
+                    inner.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+                }
+            });
+        });
+
+        // --- Intersection Observer for Scroll Animations ---
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: "0px"
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // --- Parallax Effects ---
+        const heroContent = document.getElementById('hero-content');
+        const card1 = document.getElementById('hero-card-1');
+        const card2 = document.getElementById('hero-card-2');
+        const gridFloor = document.getElementById('grid-floor');
+        const orbBlue = document.getElementById('orb-blue');
+        const orbGold = document.getElementById('orb-gold');
+        const processSection = document.getElementById('process');
+        const processBeam = document.getElementById('process-beam');
+
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+
+            // Hero Parallax
+            if (scrollY < 1000) {
+                if (heroContent) heroContent.style.transform = `translateY(${scrollY * 0.4}px)`;
+                if (card1) card1.style.transform = `rotateX(10deg) rotateY(-10deg) rotateZ(5deg) translateY(${scrollY * -0.2}px)`;
+                if (card2) card2.style.transform = `rotateX(-10deg) rotateY(20deg) rotateZ(-5deg) translateY(${scrollY * -0.4}px)`;
+            }
+
+            // Background Parallax
+            if (gridFloor) gridFloor.style.transform = `perspective(500px) rotateX(60deg) translateY(${scrollY * 0.2}px)`;
+            if (orbBlue) orbBlue.style.transform = `translateY(${scrollY * 0.1}px) translateX(-50px)`;
+            if (orbGold) orbGold.style.transform = `translateY(${scrollY * 0.15}px) translateX(50px)`;
+
+            // Process Beam Logic
+            if (processSection && processBeam) {
+                const rect = processSection.getBoundingClientRect();
+                const sectionHeight = processSection.offsetHeight;
+                const windowHeight = window.innerHeight;
+                
+                // Calculate progress: 0 when section enters, 1 when section leaves
+                // Adjusting start/end points for smoother beam animation
+                const start = windowHeight / 2;
+                const end = sectionHeight + windowHeight / 2;
+                const current = windowHeight - rect.top;
+                
+                let progress = (current - start) / (sectionHeight);
+                progress = Math.max(0, Math.min(1, progress));
+                
+                processBeam.style.height = `${progress * 100}%`;
+            }
+        });
+    </script>
+</body>
 </html>
